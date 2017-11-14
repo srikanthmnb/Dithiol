@@ -23,9 +23,9 @@ classdef struct_factor < SAXSdata
             strf.Error_SF=Err_cut./yff;
             
             %% Normalizing the structure factor
-            %x0=0.0485; % for all except 192
-            x0=0.055;    % for 192
-            xf=0.4;
+            x0=0.0485; % for all except 192
+            %x0=0.055;    % for 192
+            xf=0.123;
             nuf=sum(Q_cut < xf);
             Sf=mean(strf.SF(nuf:end));
             nu=sum(Q_cut<x0);
@@ -39,8 +39,7 @@ classdef struct_factor < SAXSdata
         end
         function fi = plotSFraw(sample)
             j =  ploterr(sample.Q_SF, sample.SF,[],sample.Error_SF,'-*');
-            fi = ancestor(j, 'figure');
-%             set(j,'LineWidth',2)
+            fi = ancestor(j(1), 'figure');
             axis([0.01 0.5 0 inf])
             axis square
             xlabel('q ($\rm{\AA} ^{-1}$ )','interpreter','LaTex','FontSize',30)
@@ -58,8 +57,9 @@ classdef struct_factor < SAXSdata
         end
         function fi = plotSFn(sample)
             j =  ploterr(sample.Q_SF, sample.SFn,[],sample.Error_SFn,'*');
-            fi = ancestor(j, 'figure');
-%             set(j,'LineWidth',2)
+%             j =  plot(sample.Q_SF, sample.SFn,'*','LineWidth',2);
+            fi = ancestor(j(1), 'figure');
+            %             set(j,'LineWidth',2)
             axis([0.01 0.5 0 inf])
             axis square
             xlabel('q ($\rm{\AA} ^{-1}$ )','interpreter','LaTex','FontSize',30)
@@ -73,6 +73,19 @@ classdef struct_factor < SAXSdata
             ax.LineWidth =2;
             set(ax, 'box','on')
             set(findall(gcf,'type','text'),'FontName','Times New Roman')
+        end
+        function normalize(sample,x0,xf,xf2)
+            nuf=sum(Q_cut < xf);
+            nuf2=sum(Q_cut<xf2);
+            Sf=mean(strf.SF(nuf:nuf2));
+            nu=sum(Q_cut<x0);
+            slope=strf.SF(nu)/Q_cut(nu);
+            x_low=Q_cut(1:nu);
+            S_low=slope*x_low';
+            strf.SFn=strf.SF;
+            strf.SFn(1:nu)=S_low;
+            strf.SFn=strf.SFn./Sf;
+            strf.Error_SFn = strf.Error_SF./Sf;
         end
         function gr = radial_dist(sample)
             r=0:1:200;

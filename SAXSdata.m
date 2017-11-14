@@ -15,24 +15,47 @@ classdef SAXSdata
     methods
         function sxd = SAXSdata(t,b,scaling_factor)
             if nargin >0
-                s = strcat('*',num2str(t,'%03i'),'.dat');
+                s = strcat('*',num2str(t,'%05i'),'_00001.dat');
                 files = dir(s);
+                if isempty(files)== 0
+                    ALL_DATA=importdata(files.name,'\t',13);
+                    data=ALL_DATA.data;
+                end
+                if isempty(files) == 1
+                    s = strcat('*',num2str(t,'%05i'),'.avg');
+                    files = dir(s);
+                    ALL_DATA=importdata(files.name,'\t',8);
+                    data=ALL_DATA.data;
+                end
                 
                 if isempty(files) == 1
                     error('Data file with .dat extension does not exist in this folder')
                 end
-                data = readtable(files.name);
-                data = table2array(data);
+                
+                
                 sxd.Q = data(:,1);
                 sxd.Intensity = data(:,2);
                 sxd.Error = data(:,3);
                 sxd.SN=t;
                 sxd.sf=scaling_factor;
                 if b~= 0
-                    s = strcat('*',num2str(b,'%03i'),'.dat');
+                    s = strcat('*',num2str(b,'%05i'),'_00001.dat');
                     files = dir(s);
-                    data = readtable(files.name);
-                    data = table2array(data);
+                    if isempty(files)== 0
+                        ALL_DATA=importdata(files.name,'\t',13);
+                        data=ALL_DATA.data;
+                    end
+                    if isempty(files) == 1
+                        s = strcat('*',num2str(b,'%05i'),'.avg');
+                        files = dir(s);
+                        ALL_DATA=importdata(files.name,'\t',8);
+                        data=ALL_DATA.data;
+                    end
+                    
+                    if isempty(files) == 1
+                        error('Data file with .dat extension does not exist in this folder')
+                    end
+                    
                     sxd.bQ = data(:,1);
                     sxd.bIntensity = data(:,2);
                     sxd.bError = data(:,3);
@@ -56,8 +79,9 @@ classdef SAXSdata
             end
         end
         function fi = plotraw(sample)
+            %j =  loglog(sample.Q, sample.Intensity, '-*');
             j =  ploterr(sample.Q, sample.Intensity, [],sample.Error,'-*','logxy');
-            fi = ancestor(j, 'figure');
+            fi = ancestor(j(1), 'figure');
             set(j,'LineWidth',2)
             axis([0.01 0.5 0 inf])
             axis square
@@ -71,7 +95,7 @@ classdef SAXSdata
             ax.XAxis.FontSize=20;
             ax.YAxis.FontSize=20;
             ax.Title.FontSize=20;
-            ax.LineWidth =2;            
+            ax.LineWidth =2;
             set(ax, 'box','on')
             set(findall(gcf,'type','text'),'FontName','Times New Roman','FontSize',30)
         end
@@ -82,7 +106,7 @@ classdef SAXSdata
                 bs = subtract(sample);
                 h = ploterr(bs.Q, bs.Intensity, [],bs.Error,'-*','logxy');
                 set(h,'LineWidth',2)
-                fi = ancestor(h, 'figure');
+                fi = ancestor(h(1), 'figure');
                 axis([0.01 0.5 0 inf])
                 axis square
                 xlabel('q ($\rm{\AA} ^{-1}$ )','interpreter','LaTex','FontSize',30)
